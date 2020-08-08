@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 from time import time
 from bs4 import BeautifulSoup
 
-conn = sqlite3.connect('spider.sqlite')
+conn = sqlite3.connect('smoker.sqlite')
 cur = conn.cursor()
 
 cur.execute('''CREATE TABLE IF NOT EXISTS Pages
@@ -22,7 +22,7 @@ cur.execute('''CREATE TABLE IF NOT EXISTS Webs (url TEXT UNIQUE)''')
 cur.execute('SELECT id,url FROM Pages WHERE html is NULL and code is NULL ORDER BY insert_at, id LIMIT 1')
 row = cur.fetchone()
 if row is not None:
-    print("Restarting existing crawl.  Remove spider.sqlite to start a fresh crawl.")
+    print("Restarting existing crawl.  Remove smoker.sqlite to start a fresh crawl.")
 else :
     starturl = input('Enter web url or enter: ')
     if ( len(starturl) < 1 ) : starturl = 'http://localhost:8080/portal'
@@ -93,8 +93,8 @@ while True:
         content_length = int(r.headers.get('Content-Length', -1))
         
         # Yeah wicket sucks
-        if code == 404 and re.search('/\\./.*?[0-9]+-[0-9]+', url):
-            print("Wicket sucks");
+        if code == 404 and re.search('\?[0-9]+-[0-9]+', url):
+            print("Wicket encodes state into URLs which leads to later 404s :(");
             cur.execute('DELETE from Pages WHERE url=?', (url, ) )
             conn.commit()
             continue
@@ -113,18 +113,27 @@ while True:
         print('Program interrupted by user...')
         break
     except Exception as exc:
-        print("Unable to retrieve or parse page")
+        print("Unexpected error")
         print(exc)
-        conn.commit()
         break
 
     # Actually get the material
     html = r.text
     if content_length < 0 : content_length = len(html)
-    print('('+str(len(html))+')', end=' ')
 
+    if re.search('NullPointerException', html) :
+        print("\nNullPointerException\n")
+        code = 450
+    elif code == 200 and re.search('HTTP Status 404.*Apache Tomcat', html) :
+        print("\nHTTP Status 404.*Apache Tomcat\n")
+        code = 404
+    elif code == 200 and re.search('Apache Tomcat', html) :
+        print("\nApache Tomcat\n")
+        code = 454
+
+    print('('+str(len(html))+')', code, end=' ')
     cur.execute('INSERT OR IGNORE INTO Pages (url, html, new_rank, insert_at) VALUES ( ?, NULL, 1.0, ? )', ( url, time()) )
-    cur.execute('UPDATE Pages SET html=?, size=?, insert_at=? WHERE url=?', (html, content_length, time(), url) )
+    cur.execute('UPDATE Pages SET html=?, code=?, size=?, insert_at=? WHERE url=?', (html, code, content_length, time(), url) )
     conn.commit()
 
     soup = BeautifulSoup(html, "html.parser")
@@ -138,6 +147,8 @@ while True:
         if ( href is None ) : continue
 
         if '/portal/logout' in href : continue
+        # Always a helper
+        if 'ResourcePicker/tool' in href : continue
         hrefs.append(href)
 
     tags = soup('link')
