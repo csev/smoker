@@ -1,5 +1,6 @@
 import sqlite3
 import requests
+import re
 from urllib.parse import urljoin
 from urllib.parse import urlparse
 from time import time
@@ -50,9 +51,11 @@ for row in cur:
         cookies = r.cookies
         print(cookies)
         login = "http://localhost:8080/portal/relogin";
+        # payload = {'eid': 'hirouki', 'pw': 'p', 'submit': 'Log in'}
         payload = {'eid': 'admin', 'pw': 'admin', 'submit': 'Log in'}
         r = requests.post(login, cookies=cookies, data=payload)
         # TODO: Might want some error checking here
+        webs.append("http://localhost:8080/")
     webs.append(str(row[0]))
 
 print(webs)
@@ -88,6 +91,14 @@ while True:
         code = r.status_code
         content_type = r.headers.get('Content-Type', False)
         content_length = int(r.headers.get('Content-Length', -1))
+        
+        # Yeah wicket sucks
+        if code == 404 and re.search('/\\./.*?[0-9]+-[0-9]+', url):
+            print("Wicket sucks");
+            cur.execute('DELETE from Pages WHERE url=?', (url, ) )
+            conn.commit()
+            continue
+
 
         cur.execute('UPDATE Pages SET code=?, size=?, content_type=?, insert_at=? WHERE url=?',
                 (code, content_length, content_type, time(), url) )
@@ -118,15 +129,33 @@ while True:
 
     soup = BeautifulSoup(html, "html.parser")
 
-    # Retrieve all of the anchor tags
-    tags = soup('a')
+    # Retrieve all of the external links
     count = 0
+    hrefs = list()
+    tags = soup('a')
     for tag in tags:
         href = tag.get('href', None)
-        xhref = href
         if ( href is None ) : continue
 
         if '/portal/logout' in href : continue
+        hrefs.append(href)
+
+    tags = soup('link')
+    for tag in tags:
+        href = tag.get('href', None)
+        if ( href is None ) : continue
+        hrefs.append(href)
+
+    tags = soup('script')
+    for tag in tags:
+        href = tag.get('src', None)
+        if ( href is None ) : continue
+        if href.startswith('javascript:') : continue
+        hrefs.append(href)
+
+    for href in hrefs:
+        if href.startswith('javascript:') : continue
+        if href.startswith('#') : continue
 
         # hrefs look like
         # - global with http or https
@@ -135,9 +164,9 @@ while True:
         # Current url may or may not end in a slash
         up = urlparse(href)
         aup = urlparse(actualurl)
-        actualroot = aup.scheme + aup.netloc # No slash
+        actualroot = aup.scheme + '://' + aup.netloc # No slash
         # print(href, up)
-        # print(actualurl, actualroot, aup)
+        # print(actualurl, actualroot)
         if ( len(up.scheme) > 1 ) :
             pass  # Global href
         elif href.startswith("/") :
@@ -163,8 +192,8 @@ while True:
                 found = True
                 break
         if not found : continue
-        # print(actualurl, xhref, href)
 
+        # print('new link', href)
         cur.execute('INSERT OR IGNORE INTO Pages (url, html, new_rank, insert_at) VALUES ( ?, NULL, 1.0, ? )', ( href, time()) )
         count = count + 1
         conn.commit()
