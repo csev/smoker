@@ -6,6 +6,11 @@ from urllib.parse import urlparse
 from time import time
 from bs4 import BeautifulSoup
 
+def isWicket(url) :
+    if url.find('ILinkListener') > 0 : return True
+    if re.search('\?[0-9]+-[0-9]+', url) : return True
+    return False
+
 conn = sqlite3.connect('smoker.sqlite')
 cur = conn.cursor()
 
@@ -91,12 +96,11 @@ while True:
         content_length = int(r.headers.get('Content-Length', -1))
         
         # Yeah wicket sucks
-        if code == 404 and re.search('\?[0-9]+-[0-9]+', url):
-            print("Wicket encodes state into URLs which leads to later 404s :(");
+        if code == 404 and isWicket(url):
+            print("Wicket encodes state into URLs which leads to later 404s");
             cur.execute('DELETE from Pages WHERE url=?', (url, ) )
             conn.commit()
             continue
-
 
         cur.execute('UPDATE Pages SET code=?, size=?, content_type=?, insert_at=? WHERE url=?',
                 (code, content_length, content_type, time(), url) )
