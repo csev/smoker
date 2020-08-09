@@ -6,9 +6,32 @@ from urllib.parse import urlparse
 from time import time
 from bs4 import BeautifulSoup
 
-def isWicket(url) :
+# Eventually these will be plugins to work with things other than Sakai
+def loginUser(web) :
+    if web.startswith('http://localhost:8080') :
+        print("setting up sakai")
+        portal = "http://localhost:8080/portal";
+        r = requests.get(portal)
+        cookies = r.cookies
+        print(cookies)
+        login = "http://localhost:8080/portal/relogin";
+        # payload = {'eid': 'hirouki', 'pw': 'p', 'submit': 'Log in'}
+        payload = {'eid': 'admin', 'pw': 'admin', 'submit': 'Log in'}
+        r = requests.post(login, cookies=cookies, data=payload)
+        return cookies
+    return None
+
+def ignoreError(code, url) :
     if url.find('ILinkListener') > 0 : return True
     if re.search('\?[0-9]+-[0-9]+', url) : return True
+    return False
+
+def dontVisit(href):
+    if re.search('/portal/site/[^/]*/tool-reset/', href) : return True
+    if re.search('/portal/site/[^/]*/page-reset/', href) : return True
+    if '/portal/logout' in href : return True
+    if '/portal/login' in href : return True
+    if 'ResourcePicker/tool' in href : return True
     return False
 
 conn = sqlite3.connect('smoker.sqlite')
@@ -48,17 +71,9 @@ cookies = None
 cur.execute('''SELECT url FROM Webs''')
 webs = list()
 for row in cur:
-    val = str(row[0])
-    if val.startswith('http://localhost:8080') :
-        print("setting up sakai")
-        portal = "http://localhost:8080/portal";
-        r = requests.get(portal)
-        cookies = r.cookies
-        print(cookies)
-        login = "http://localhost:8080/portal/relogin";
-        # payload = {'eid': 'hirouki', 'pw': 'p', 'submit': 'Log in'}
-        payload = {'eid': 'admin', 'pw': 'admin', 'submit': 'Log in'}
-        r = requests.post(login, cookies=cookies, data=payload)
+    web = str(row[0])
+    ck = loginUser(web)
+    if ck != None : cookies = ck
     webs.append(str(row[0]))
 
 print(webs)
@@ -95,9 +110,8 @@ while True:
         content_type = r.headers.get('Content-Type', False)
         content_length = int(r.headers.get('Content-Length', -1))
         
-        # Yeah wicket sucks
-        if code == 404 and isWicket(url):
-            print("Wicket encodes state into URLs which leads to later 404s");
+        # Is this a code from a url that we don't even want to bother recording
+        if ignoreError(code, url):
             cur.execute('DELETE from Pages WHERE url=?', (url, ) )
             conn.commit()
             continue
@@ -150,9 +164,10 @@ while True:
         href = tag.get('href', None)
         if ( href is None ) : continue
 
-        if '/portal/logout' in href : continue
-        # Always a helper
-        if 'ResourcePicker/tool' in href : continue
+        if dontVisit(href) :
+            # print('Skipping', href)
+            continue
+
         hrefs.append(href)
 
     tags = soup('link')
