@@ -27,11 +27,17 @@ def ignoreError(code, url) :
     return False
 
 def dontVisit(href):
+    # Lets keep as much state as we can
     if re.search('/portal/site/[^/]*/tool-reset/', href) : return True
     if re.search('/portal/site/[^/]*/page-reset/', href) : return True
+
+    # Neither log out nor log in
     if '/portal/logout' in href : return True
     if '/portal/login' in href : return True
+
+    # Helpers usually need way too much state to work
     if 'ResourcePicker/tool' in href : return True
+    if re.search('/portal/site/[^/]*/tool/[^/]*.PermissionsHelper', href) : return True
     return False
 
 conn = sqlite3.connect('smoker.sqlite')
@@ -47,7 +53,8 @@ cur.execute('''CREATE TABLE IF NOT EXISTS Links
 cur.execute('''CREATE TABLE IF NOT EXISTS Webs (url TEXT UNIQUE)''')
 
 # Check to see if we are already in progress...
-cur.execute('SELECT id,url FROM Pages WHERE html is NULL and code is NULL ORDER BY insert_at, id LIMIT 1')
+#cur.execute('SELECT id,url FROM Pages WHERE html is NULL and code is NULL ORDER BY insert_at, id LIMIT 1')
+cur.execute('SELECT id,url FROM Pages WHERE html is NULL and code is NULL ORDER BY random() LIMIT 1')
 row = cur.fetchone()
 if row is not None:
     print("Restarting existing crawl.  Remove smoker.sqlite to start a fresh crawl.")
@@ -86,7 +93,8 @@ while True:
         many = int(sval)
     many = many - 1
 
-    cur.execute('SELECT id,url FROM Pages WHERE html is NULL and code is NULL ORDER BY insert_at,id LIMIT 1')
+    # cur.execute('SELECT id,url FROM Pages WHERE html is NULL and code is NULL ORDER BY insert_at,id LIMIT 1')
+    cur.execute('SELECT id,url FROM Pages WHERE html is NULL and code is NULL ORDER BY random() LIMIT 1')
     try:
         row = cur.fetchone()
         # print row
