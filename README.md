@@ -24,39 +24,21 @@ Running the smoke tester
 
 If you don't enter a base url, it assumes Sakai on port 8080
 
-    rm smoker.sqlite
-    python3 smoker.py 
-    Enter web url or enter: 
-    setting up sakai
-    <RequestsCookieJar[<Cookie JSESSIONID=e1d7d538-9c75-4e8b-8c9f-5e76e698fb81.MacBook-Pro-186.local for localhost.local/>]>
-    ['http://localhost:8080']
-    How many pages:5
+    python3 smoker.py http://localhost:8080 5
     1 http://localhost:8080 (124) 200 1
-    2 http://localhost:8080/portal (79301) 200 71
-    3 http://localhost:8080/portal/site/%7Eadmin/page-reset/%7Eadmin-100 (79329) 200 71
-    4 http://localhost:8080/portal/site/%7Eadmin/page/%7Eadmin-1120 (81891) 200 73
-    5 http://localhost:8080/portal/site/%7Eadmin (81891) 200 73
-    How many pages: 100000
-
-It is restartable and if aborted or finished it will pick up where it leaves off.  To 
-completely rtestart the crawl `rm smoker.sqlite` and run `smoker.py` again.
+    2 http://localhost:8080/portal (42145) 200 47
+    11 http://localhost:8080/portal/help/main?help=sakai.motd (529) 200 0
+    24 http://localhost:8080/pasystem-tool/stylesheets/pasystem.css?version=69e08c58 Note non text/html page
+    10 http://localhost:8080/portal/help/main (523) 200 0
 
 It can work with any web tool / web site.  The site can be running locally or
 on the Internet:
 
-    rm smoker.sqlite
-    python3 smoker.py 
-    Enter web url or enter: https://www.tsugicloud.org/
-    ['https://www.tsugicloud.org']
-    How many pages:1000
+    python3 smoker.py https://www.tsugicloud.org 5
     1 https://www.tsugicloud.org (13589) 200 22
-    2 https://www.tsugicloud.org/about/policies/privacy (15633) 200 22
+    4 https://www.tsugicloud.org/about/policies/service-level-agreement (9994) 200 22
+    14 https://www.tsugicloud.org/system/assets/jquery/jquery-2.x.min.js Note non text/html page
     3 https://www.tsugicloud.org/about/policies/data-retention (10035) 200 22
-    ..
-    68 https://www.tsugicloud.org/mod/iframe/register.json Note non text/html page
-    69 https://www.tsugicloud.org/mod/gift/canvas-config.xml Note non text/html page
-    70 https://www.tsugicloud.org/mod/gift/register.json Note non text/html page
-    No unretrieved HTML pages found
 
 To view the results - even while it is running, use
 
