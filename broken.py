@@ -1,6 +1,6 @@
 import sqlite3
 
-conn = sqlite3.connect('spider.sqlite')
+conn = sqlite3.connect('smoker.sqlite')
 cur = conn.cursor()
 
 cur.execute('''SELECT Bad.url AS bad_url, Bad.size, Bad.code, Bad.content_type, Fr.url AS from_url

@@ -25,7 +25,7 @@ if row is not None:
     print("Restarting existing crawl.  Remove smoker.sqlite to start a fresh crawl.")
 else :
     starturl = input('Enter web url or enter: ')
-    if ( len(starturl) < 1 ) : starturl = 'http://localhost:8080/portal'
+    if ( len(starturl) < 1 ) : starturl = 'http://localhost:8080'
     # if ( len(starturl) < 1 ) : starturl = 'http://localhost:8888/py4e'
     if ( starturl.endswith('/') ) : starturl = starturl[:-1]
     web = starturl
@@ -54,8 +54,6 @@ for row in cur:
         # payload = {'eid': 'hirouki', 'pw': 'p', 'submit': 'Log in'}
         payload = {'eid': 'admin', 'pw': 'admin', 'submit': 'Log in'}
         r = requests.post(login, cookies=cookies, data=payload)
-        # TODO: Might want some error checking here
-        webs.append("http://localhost:8080/")
     webs.append(str(row[0]))
 
 print(webs)
@@ -163,6 +161,17 @@ while True:
         if ( href is None ) : continue
         if href.startswith('javascript:') : continue
         hrefs.append(href)
+
+    # Special for lines of the form
+    # <meta http-equiv="refresh" content="0;url=/portal">
+    check = '<meta http-equiv="refresh" content="0;url='
+    pos = html.find(check)
+    if pos > 1 : 
+        pos = pos + len(check)
+        pos2 = html.find('"', pos)
+        if pos2 > 0 :
+            href = html[pos+1:pos2]
+            hrefs.append(href)
 
     for href in hrefs:
         if href.startswith('javascript:') : continue
