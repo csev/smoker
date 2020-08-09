@@ -26,6 +26,9 @@ class Smoker :
     def dontVisit(self, href):
         return False
 
+    def adjustCode(self, code, html, url) : 
+        return code
+
     def run(self, many) :
         conn = sqlite3.connect(self.database)
         cur = conn.cursor()
@@ -109,15 +112,7 @@ class Smoker :
             html = r.text
             if content_length < 0 : content_length = len(html)
 
-            if re.search('NullPointerException', html) :
-                print("\nNullPointerException\n")
-                code = 450
-            elif code == 200 and re.search('HTTP Status 404.*Apache Tomcat', html) :
-                print("\nHTTP Status 404.*Apache Tomcat\n")
-                code = 404
-            elif code == 200 and re.search('Apache Tomcat', html) :
-                print("\nApache Tomcat\n")
-                code = 454
+            code = self.adjustCode(code, html, url)
 
             print('('+str(len(html))+')', code, end=' ')
             cur.execute('INSERT OR IGNORE INTO Pages (url, html, insert_at) VALUES ( ?, NULL, ? )', ( url, time()) )

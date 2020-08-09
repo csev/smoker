@@ -34,6 +34,17 @@ class SakaiSmoker(Smoker):
         if re.search('/portal/site/[^/]*/tool/[^/]*.PermissionsHelper', href) : return True
         return False
 
+    def adjustCode(self, code, html, url) :
+        if re.search('NullPointerException', html) :
+            print("\nNullPointerException\n")
+            code = 450
+        elif code == 200 and re.search('HTTP Status 404.*Apache Tomcat', html) :
+            print("\nHTTP Status 404.*Apache Tomcat\n")
+            code = 404
+        elif code == 200 and re.search('Apache Tomcat', html) :
+            print("\nApache Tomcat\n")
+            code = 454
+
 os.unlink('smoker.sqlite')
 app = SakaiSmoker('http://localhost:8080', 'smoker.sqlite')
 app.run(20000);
