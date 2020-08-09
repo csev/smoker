@@ -20,15 +20,19 @@ class Smoker :
     def loginUser(self, baseurl) :
         return None
 
+    # Some URLs we don't care if we get a particular kinf of error
     def ignoreError(self, code, url) :
         return False
 
+    # When looking at a page with urls, which should not be added to the queue
     def dontVisit(self, href):
         return False
 
+    # Once a page as been retrieved, we might look at the test for a traceback or erorr page
     def adjustCode(self, code, html, url) : 
         return code
 
+    # The main event
     def run(self, many) :
         conn = sqlite3.connect(self.database)
         cur = conn.cursor()
