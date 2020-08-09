@@ -113,7 +113,9 @@ while True:
     except Exception as exc:
         print("Unexpected error")
         print(exc)
-        break
+        cur.execute('UPDATE Pages SET code=?, size=?, content_type=?, html=?, insert_at=? WHERE url=?',
+                (999, 0, 'Exception', str(exc), time(), url) )
+        continue
 
     # Actually get the material
     html = r.text
