@@ -37,15 +37,19 @@ class SakaiSmoker(Smoker):
 
     def adjustCode(self, code, html, url) :
         if re.search('NullPointerException', html) :
-            print("\nNullPointerException\n")
+            print("\n\nNullPointerException\n")
             return 450
         elif re.search('HTTP Status 404.*Apache Tomcat', html) :
             return 404
         elif re.search('Apache Tomcat', html) :
             return 454
         elif re.search('To send a bug report, describe what you were doing when the problem occurred, in the space below, and press the submit button.',html) :
-            print("\nBug Report\n")
+            print("\n\nBug Report\n")
             return 453
+        # Like if a velocity template goes bad
+        elif re.search('<!-- Buffered Body Tool Content -->\s*<!-- End Buffered Body Tool Content -->', html) :
+            print("\n\nBlank tool content\n")
+            return 455
         return code
 
 if __name__ == "__main__":
