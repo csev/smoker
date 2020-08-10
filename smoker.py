@@ -12,6 +12,7 @@ class Smoker :
     database = 'smoker.sqlite'
     baseurl = 'http://localhost:8080'
     walk = 'random'   # Or breadth or depth
+    maxdepth = 15
 
     def __init__(self, baseurl, database, walk=False) :
         self.baseurl = baseurl
@@ -129,6 +130,10 @@ class Smoker :
             cur.execute('UPDATE Pages SET html=?, code=?, size=?, insert_at=? WHERE url=?', (html, code, content_length, time(), url) )
             conn.commit()
 
+            # some pages make slightly new links that ultimately form a circle and so
+            # we seem them as infinite depth - a cut off solves this
+            if depth > self.maxdepth : continue
+
             soup = BeautifulSoup(html, "html.parser")
 
             # Retrieve all of the external links
@@ -157,6 +162,13 @@ class Smoker :
                 if ( href is None ) : continue
                 if href.startswith('javascript:') : continue
                 hrefs.append(href)
+
+            tags = soup('iframe')
+            for tag in tags:
+                href = tag.get('src', None)
+                if ( href is None ) : continue
+                hrefs.append(href)
+
 
             # Special for lines of the form
             # <meta http-equiv="refresh" content="0;url=/portal">

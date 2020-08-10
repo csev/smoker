@@ -11,8 +11,8 @@ class SakaiSmoker(Smoker):
         cookies = r.cookies
         print(cookies)
         login = "http://localhost:8080/portal/relogin";
-        # payload = {'eid': 'hirouki', 'pw': 'p', 'submit': 'Log in'}
-        payload = {'eid': 'admin', 'pw': 'admin', 'submit': 'Log in'}
+        payload = {'eid': 'hirouki', 'pw': 'p', 'submit': 'Log in'}
+        # payload = {'eid': 'admin', 'pw': 'admin', 'submit': 'Log in'}
         r = requests.post(login, cookies=cookies, data=payload)
         return cookies
 
@@ -38,13 +38,15 @@ class SakaiSmoker(Smoker):
     def adjustCode(self, code, html, url) :
         if re.search('NullPointerException', html) :
             print("\nNullPointerException\n")
-            code = 450
-        elif code == 200 and re.search('HTTP Status 404.*Apache Tomcat', html) :
-            print("\nHTTP Status 404.*Apache Tomcat\n")
-            code = 404
-        elif code == 200 and re.search('Apache Tomcat', html) :
-            print("\nApache Tomcat\n")
-            code = 454
+            return 450
+        elif re.search('HTTP Status 404.*Apache Tomcat', html) :
+            return 404
+        elif re.search('Apache Tomcat', html) :
+            return 454
+        elif re.search('To send a bug report, describe what you were doing when the problem occurred, in the space below, and press the submit button.',html) :
+            print("\nBug Report\n")
+            return 453
+        return code
 
 if __name__ == "__main__":
 
