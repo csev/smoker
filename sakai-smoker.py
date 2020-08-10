@@ -17,6 +17,7 @@ class SakaiSmoker(Smoker):
         return cookies
 
     def ignoreError(self, code, url) :
+        # Two common non-idempotent Wicket urls
         if url.find('ILinkListener') > 0 : return True
         if re.search('\?[0-9]+-[0-9]+', url) : return True
         return False
@@ -30,11 +31,12 @@ class SakaiSmoker(Smoker):
         if '/portal/logout' in href : return True
         if '/portal/login' in href : return True
 
-        # Helpers usually need way too much state to work
+        # Helpers usually need to run in a precise sequence for state
         if 'ResourcePicker/tool' in href : return True
         if re.search('/portal/site/[^/]*/tool/[^/]*.PermissionsHelper', href) : return True
         return False
 
+    # Mostly look for errors in the body that are not in the status code
     def adjustCode(self, code, html, url) :
         if re.search('NullPointerException', html) :
             print("\n\nNullPointerException\n")
