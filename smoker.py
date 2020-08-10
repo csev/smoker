@@ -223,7 +223,6 @@ class Smoker :
                 # print('new link', href)
                 cur.execute('INSERT OR IGNORE INTO Pages (url, html, depth, insert_at) VALUES ( ?, NULL, ?, ? )', ( href, depth+1, time()) )
                 count = count + 1
-                conn.commit()
 
                 cur.execute('SELECT id FROM Pages WHERE url=? LIMIT 1', ( href, ))
                 try:
@@ -234,8 +233,8 @@ class Smoker :
                     continue
                 # print fromid, toid
                 cur.execute('INSERT OR IGNORE INTO Links (from_id, to_id) VALUES ( ?, ? )', ( fromid, toid ) )
-                conn.commit()
 
+            conn.commit()
 
             print(count)
 
