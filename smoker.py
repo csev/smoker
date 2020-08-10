@@ -14,6 +14,7 @@ class Smoker :
     walk = 'random'   # Or breadth or depth
     maxdepth = 15
     useragent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:79.0) Gecko/20100101 Firefox/79.0'
+    timeout = 240  # Broken.py sometimes take 10-20 seconds to scan the DB, default is 5 seconds
 
     def __init__(self, baseurl, database, walk=False) :
         self.baseurl = baseurl
@@ -38,7 +39,7 @@ class Smoker :
 
     # The main event
     def run(self, many) :
-        conn = sqlite3.connect(self.database)
+        conn = sqlite3.connect(self.database, timeout=self.timeout)
         cur = conn.cursor()
 
         cur.execute('''CREATE TABLE IF NOT EXISTS Pages

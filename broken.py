@@ -16,6 +16,9 @@ cur.execute('''SELECT Bad.url AS bad_url, Bad.code, Bad.size, Bad.content_type, 
 
 print(total,'pages visited')
 rows = cur.fetchall()
+cur.close()
+conn.close()
+
 if not rows : 
     print('No errors')
     quit()
@@ -35,4 +38,3 @@ for row in rows :
     count = count + 1
 
 print(count, 'pages with error')
-cur.close()
