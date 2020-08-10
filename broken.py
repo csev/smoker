@@ -8,11 +8,18 @@ cur.execute('''SELECT count(*) FROM pages''')
 row = cur.fetchone()
 total = row[0]
 
-cur.execute('''SELECT Bad.url AS bad_url, Bad.code, Bad.size, Bad.content_type, Fr.url AS from_url, Bad.html
+query = '''SELECT Bad.url AS bad_url, Bad.code, Bad.size, Bad.content_type, Fr.url AS from_url
      FROM Pages AS Bad
      JOIN Links ON Bad.id = Links.to_id
      JOIN Pages AS Fr ON Links.from_id = Fr.id
-     WHERE Bad.code <> 200''')
+     WHERE Bad.code <> 200'''
+
+if len(sys.argv) > 1 : 
+    query = query.replace('from_url', 'from_url, Bad.html')
+    query = query + ' LIMIT 200'
+    print('Limited to the first 200 error')
+
+cur.execute(query)
 
 print(total,'pages visited')
 rows = cur.fetchall()
