@@ -1,11 +1,9 @@
 Simple Python Smoke Tester
 ==========================
 
-This is a general purpose smoke tester.  There are some special 
-things it does for Sakai that will be eventually factored out into plug ins.
-
-The idea is to spider the application like it is a web site - retrieving every file,
-prettying every anchor tag and finding new links and following those links.
+This is a general purpose smoke tester.  The idea is to spider the application
+like it is spidering a web site - retrieving every link, reading the HTML, 
+finding every anchor tag and adding those links to a "to retrieve" queue.
 
 In its current form it can be used to smoke test things like
 
@@ -24,21 +22,30 @@ Running the smoke tester
 
 If you don't enter a base url, it assumes Sakai on port 8080
 
-    python3 smoker.py http://localhost:8080 5
-    1 http://localhost:8080 (124) 200 1
-    2 http://localhost:8080/portal (42145) 200 47
-    11 http://localhost:8080/portal/help/main?help=sakai.motd (529) 200 0
-    24 http://localhost:8080/pasystem-tool/stylesheets/pasystem.css?version=69e08c58 Note non text/html page
-    10 http://localhost:8080/portal/help/main (523) 200 0
+    python3 smoker.py http://localhost:8080 5 depth
+    1 0 http://localhost:8080 (124) 200 1
+    2 1 http://localhost:8080/portal (42145) 200 47
+    3 2 http://localhost:8080/portal/site/!gateway/page-reset/!gateway-100 (42145) 200 47
+    4 2 http://localhost:8080/portal/site/!gateway/page/!gateway-200 (38455) 200 47
+    47 3 http://localhost:8080/portal/site/!gateway/page-reset/!gateway-200 (38455) 200 47
 
 It can work with any web tool / web site.  The site can be running locally or
 on the Internet:
 
-    python3 smoker.py https://www.tsugicloud.org 5
-    1 https://www.tsugicloud.org (13589) 200 22
-    4 https://www.tsugicloud.org/about/policies/service-level-agreement (9994) 200 22
-    14 https://www.tsugicloud.org/system/assets/jquery/jquery-2.x.min.js Note non text/html page
-    3 https://www.tsugicloud.org/about/policies/data-retention (10035) 200 22
+    python3 smoker.py https://www.tsugicloud.org 5 breadth
+    1 0 https://www.tsugicloud.org (13589) 200 22
+    2 1 https://www.tsugicloud.org/about/policies/privacy (15633) 200 22
+    3 1 https://www.tsugicloud.org/about/policies/data-retention (10035) 200 22
+    4 1 https://www.tsugicloud.org/about/policies/service-level-agreement (9994) 200 22
+    5 1 https://www.tsugicloud.org/about/documentation/howto (10571) 200 27
+
+The third parameter is how the pages are walked it can be:
+
+* `depth` - go deep down a chain of links and finish a subtree before moving on, depth-first
+
+* `breadth`  - Go across all the "1 deep" links then go the to the "2 deep", breadth-first
+
+* `random` - Pick the "next link" randomly from all the "to be loaded" links
 
 To view the results - even while it is running, use
 

@@ -11,10 +11,12 @@ class Smoker :
 
     database = 'smoker.sqlite'
     baseurl = 'http://localhost:8080'
+    walk = 'random'   # Or breadth or depth
 
-    def __init__(self, baseurl, database) :
+    def __init__(self, baseurl, database, walk=False) :
         self.baseurl = baseurl
         self.database = database
+        self.walk = walk
 
     # Returns the cookies to use if login is successful
     def loginUser(self, baseurl) :
@@ -39,19 +41,19 @@ class Smoker :
 
         cur.execute('''CREATE TABLE IF NOT EXISTS Pages
             (id INTEGER PRIMARY KEY, url TEXT UNIQUE, html TEXT, size INTEGER,
-             code INTEGER, content_type TEXT, insert_at DOUBLE)''')
+             code INTEGER, depth INTEGER, content_type TEXT, insert_at DOUBLE)''')
 
         cur.execute('''CREATE TABLE IF NOT EXISTS Links
             (from_id INTEGER, to_id INTEGER, UNIQUE(from_id, to_id))''')
 
         # Check to see if we are already in progress...
-        #cur.execute('SELECT id,url FROM Pages WHERE html is NULL and code is NULL ORDER BY insert_at, id LIMIT 1')
-        cur.execute('SELECT id,url FROM Pages WHERE html is NULL and code is NULL ORDER BY random() LIMIT 1')
+        cur.execute('SELECT id,url FROM Pages WHERE html is NULL and code is NULL LIMIT 1')
+
         row = cur.fetchone()
         if row is not None:
             print("Restarting existing crawl.  Remove",self.database,"to start a 100% fresh crawl.")
         else:
-            cur.execute('INSERT OR IGNORE INTO Pages (url, html, insert_at) VALUES ( ?, NULL, ? )', ( self.baseurl, time()) )
+            cur.execute('INSERT OR IGNORE INTO Pages (url, html, depth, insert_at) VALUES ( ?, NULL, ?, ? )', ( self.baseurl, 0, time()) )
             conn.commit()
 
         cookies = None
@@ -62,19 +64,24 @@ class Smoker :
             many = many - 1
             if many < 0 : return
 
-            # cur.execute('SELECT id,url FROM Pages WHERE html is NULL and code is NULL ORDER BY insert_at,id LIMIT 1')
-            cur.execute('SELECT id,url FROM Pages WHERE html is NULL and code is NULL ORDER BY random() LIMIT 1')
+            if self.walk == 'depth':
+                cur.execute('SELECT id,url,depth FROM Pages WHERE html is NULL and code is NULL ORDER BY depth DESC, insert_at, id LIMIT 1')
+            elif self.walk == 'breadth' : 
+                cur.execute('SELECT id,url,depth FROM Pages WHERE html is NULL and code is NULL ORDER BY depth ASC, insert_at, id LIMIT 1')
+            else :
+                cur.execute('SELECT id,url,depth FROM Pages WHERE html is NULL and code is NULL ORDER BY random() LIMIT 1')
             try:
                 row = cur.fetchone()
                 # print row
                 fromid = row[0]
                 url = row[1]
+                depth = row[2]
             except:
                 print('No unretrieved HTML pages found')
                 many = 0
                 break
 
-            print(fromid, url, end=' ')
+            print(fromid, depth, url, end=' ')
             actualurl = url
 
             # If we are retrieving this page, there should be no links from it
@@ -119,7 +126,6 @@ class Smoker :
             code = self.adjustCode(code, html, url)
 
             print('('+str(len(html))+')', code, end=' ')
-            cur.execute('INSERT OR IGNORE INTO Pages (url, html, insert_at) VALUES ( ?, NULL, ? )', ( url, time()) )
             cur.execute('UPDATE Pages SET html=?, code=?, size=?, insert_at=? WHERE url=?', (html, code, content_length, time(), url) )
             conn.commit()
 
@@ -200,7 +206,7 @@ class Smoker :
                 if not href.startswith(self.baseurl) : continue
 
                 # print('new link', href)
-                cur.execute('INSERT OR IGNORE INTO Pages (url, html, insert_at) VALUES ( ?, NULL, ? )', ( href, time()) )
+                cur.execute('INSERT OR IGNORE INTO Pages (url, html, depth, insert_at) VALUES ( ?, NULL, ?, ? )', ( href, depth+1, time()) )
                 count = count + 1
                 conn.commit()
 
@@ -224,17 +230,26 @@ if __name__ == "__main__":
 
     if len(sys.argv) < 2:
         print()
-        print("Example usage: smoker.py http://localhost:8080 100")
+        print("Example usage: smoker.py http://localhost:8080 100 depth|breadth|random")
         print()
 
     base = 'http://localhost:8080'
     many = 100
+    walk = 'random'
+
     if len(sys.argv) > 1:
         base = sys.argv[1]
 
     if len(sys.argv) > 2:
         many = int(sys.argv[2])
 
-    os.unlink('smoker.sqlite')
-    app = Smoker(base, 'smoker.sqlite')
+    if len(sys.argv) > 3:
+        walk = sys.argv[3]
+
+    try:
+        os.remove('smoker.sqlite')
+    except OSError:
+        pass
+
+    app = Smoker(base, 'smoker.sqlite', walk)
     app.run(many);

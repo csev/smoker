@@ -1,4 +1,5 @@
-import os, requests, re
+import os, requests, sys
+import re
 
 from smoker import Smoker
 
@@ -45,7 +46,31 @@ class SakaiSmoker(Smoker):
             print("\nApache Tomcat\n")
             code = 454
 
-os.unlink('smoker.sqlite')
-app = SakaiSmoker('http://localhost:8080', 'smoker.sqlite')
-app.run(20000);
+if __name__ == "__main__":
+
+    if len(sys.argv) < 2:
+        print()
+        print("Example usage: python3 sakai-smoker.py http://localhost:8080 100 depth|breadth|random")
+        print()
+
+    base = 'http://localhost:8080'
+    many = 20000
+    walk = 'random'
+
+    if len(sys.argv) > 1:
+        base = sys.argv[1]
+
+    if len(sys.argv) > 2:
+        many = int(sys.argv[2])
+
+    if len(sys.argv) > 3:
+        walk = sys.argv[3]
+
+    try:
+        os.remove('smoker.sqlite')
+    except OSError:
+        pass
+
+    app = SakaiSmoker(base, 'smoker.sqlite', walk)
+    app.run(many);
 
