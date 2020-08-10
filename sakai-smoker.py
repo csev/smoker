@@ -11,8 +11,8 @@ class SakaiSmoker(Smoker):
         cookies = r.cookies
         print(cookies)
         login = "http://localhost:8080/portal/relogin";
-        payload = {'eid': 'hirouki', 'pw': 'p', 'submit': 'Log in'}
-        # payload = {'eid': 'admin', 'pw': 'admin', 'submit': 'Log in'}
+        # payload = {'eid': 'hirouki', 'pw': 'p', 'submit': 'Log in'}
+        payload = {'eid': 'admin', 'pw': 'admin', 'submit': 'Log in'}
         r = requests.post(login, cookies=cookies, data=payload)
         return cookies
 
