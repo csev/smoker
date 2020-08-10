@@ -13,6 +13,7 @@ class Smoker :
     baseurl = 'http://localhost:8080'
     walk = 'random'   # Or breadth or depth
     maxdepth = 15
+    useragent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:79.0) Gecko/20100101 Firefox/79.0'
 
     def __init__(self, baseurl, database, walk=False) :
         self.baseurl = baseurl
@@ -88,7 +89,8 @@ class Smoker :
             # If we are retrieving this page, there should be no links from it
             cur.execute('DELETE from Links WHERE from_id=?', (fromid, ) )
             try:
-                r = requests.get(url, cookies=cookies)
+                hdrs = {"User-Agent": self.useragent}
+                r = requests.get(url, cookies=cookies, headers=hdrs)
 
                 actualurl = r.url
                 code = r.status_code
@@ -118,6 +120,7 @@ class Smoker :
                 print(exc)
                 cur.execute('UPDATE Pages SET code=?, size=?, content_type=?, html=?, insert_at=? WHERE url=?',
                         (999, 0, 'Exception', str(exc), time(), url) )
+                conn.commit()
                 continue
 
             # Actually get the material
@@ -231,6 +234,7 @@ class Smoker :
                     continue
                 # print fromid, toid
                 cur.execute('INSERT OR IGNORE INTO Links (from_id, to_id) VALUES ( ?, ? )', ( fromid, toid ) )
+                conn.commit()
 
 
             print(count)

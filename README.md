@@ -51,6 +51,10 @@ To view the results - even while it is running, use
 
     python3 broken.py
 
+Add `html` if you want to see the HTML:
+
+    python3 broken.py html
+
 It shows you the URL, where it was linked from, the error code, etc.
 
 Some Fun things to Smoke Test
