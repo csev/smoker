@@ -53,6 +53,21 @@ To view the results - even while it is running, use
 
 It shows you the URL, where it was linked from, the error code, etc.
 
+Some Fun things to Smoke Test
+-----------------------------
+
+Nightly Master 
+
+python3 sakai-smoker.py https://trunk-mysql.nightly.sakaiproject.org 40000 breadth
+
+The 20.x branch
+
+python3 sakai-smoker.py https://qa20-mysql.nightly.sakaiproject.org/ 40000 breadth
+
+The 19.x branch
+
+python3 sakai-smoker.py https://qa19-mysql.nightly.sakaiproject.org/ 40000 breadth
+
 Viewing in a Browser
 --------------------
 
