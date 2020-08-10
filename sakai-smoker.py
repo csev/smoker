@@ -50,12 +50,12 @@ if __name__ == "__main__":
 
     if len(sys.argv) < 2:
         print()
-        print("Example usage: python3 sakai-smoker.py http://localhost:8080 100 depth|breadth|random")
+        print("Example usage: python3 sakai-smoker.py http://localhost:8080 20000 depth")
         print()
 
     base = 'http://localhost:8080'
     many = 20000
-    walk = 'random'
+    walk = 'depth'  # or breadth or random
 
     if len(sys.argv) > 1:
         base = sys.argv[1]
