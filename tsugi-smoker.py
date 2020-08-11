@@ -8,14 +8,23 @@ class TsugiSmoker(Smoker):
         print("setting up tsugi")
         admin = web
         if 'tsugi' not in admin: admin = admin + '/tsugi'
-        admin = admin + "/admin/";
         print(admin)
         r = requests.get(admin)
         cookies = r.cookies
         print(cookies)
+        admin = admin + "/admin/";
         payload = {'passphrase': 'short'}
         r = requests.post(admin, cookies=cookies, data=payload)
         return cookies
+
+    def extraStartingPoints(self, web) :
+        retval = list()
+        if 'tsugi' not in web: 
+            web = web + '/tsugi'
+            retval.append(web)
+        web = web + '/admin'
+        retval.append(web)
+        return retval
 
     def dontVisit(self, href):
         # Neither log out nor log in
@@ -25,8 +34,11 @@ class TsugiSmoker(Smoker):
 
     # Mostly look for errors in the body that are not in the status code
     def adjustCode(self, code, html, url) :
-        retval = re.search('<b>Parse error</b>:.*on line', html)
 
+        # if '/tsugi/admin' in url : 
+            # print(html)
+
+        retval = re.search('<b>Parse error</b>:.*on line', html)
         if retval:
             print('\n\n')
             print(retval.group(0));

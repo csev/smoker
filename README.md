@@ -51,6 +51,9 @@ To view the results - even while it is running, use
 
     python3 broken.py
 
+This runs a long time - and since we are using SQLite3 - you can cause a transction timeout
+if you run `broken.py` towards the end of a really long run.
+
 Add `html` if you want to see the HTML:
 
     python3 broken.py html
@@ -71,6 +74,10 @@ python3 sakai-smoker.py https://qa20-mysql.nightly.sakaiproject.org/ 40000 bread
 The 19.x branch
 
 python3 sakai-smoker.py https://qa19-mysql.nightly.sakaiproject.org/ 40000 breadth
+
+A copy of the PY4E Tsugi/Koseu site
+
+python3 tsugi-smoker.py http://localhost:8888/py4e 4000 breadth
 
 Viewing in a Browser
 --------------------

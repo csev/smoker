@@ -21,6 +21,11 @@ class Smoker :
         self.database = database
         self.walk = walk
 
+    # If there are some extra starting points we want to add to the crawl that are not linked in the UI
+    def extraStartingPoints(self, baseurl) :
+        retval = list()
+        return retval
+
     # Returns the cookies to use if login is successful
     def loginUser(self, baseurl) :
         return None
@@ -57,6 +62,9 @@ class Smoker :
             print("Restarting existing crawl.  Remove",self.database,"to start a 100% fresh crawl.")
         else:
             cur.execute('INSERT OR IGNORE INTO Pages (url, html, depth, insert_at) VALUES ( ?, NULL, ?, ? )', ( self.baseurl, 0, time()) )
+            points = self.extraStartingPoints(self.baseurl)
+            for point in points:
+                cur.execute('INSERT OR IGNORE INTO Pages (url, html, depth, insert_at) VALUES ( ?, NULL, ?, ? )', ( point, 0, time()) )
             conn.commit()
 
         cookies = None
@@ -81,6 +89,14 @@ class Smoker :
                 depth = row[2]
             except:
                 print('No unretrieved HTML pages found')
+                cur.execute('''SELECT count(*) FROM Pages''')
+                row = cur.fetchone()
+                total = row[0]
+                print('Total pages:', total)
+                cur.execute('''SELECT count(*) FROM Pages WHERE code <> 200''')
+                row = cur.fetchone()
+                ecount = row[0]
+                print('Error pages:', ecount)
                 many = 0
                 break
 
