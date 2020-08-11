@@ -1,16 +1,22 @@
-Simple Python Smoke Tester
-==========================
+Simple Python Link and Page Checker
+===================================
 
-This is a general purpose smoke tester.  The idea is to spider the application
+This is a general purpose brute force link checker for web applications.
+
+The idea is to spider the application
 like it is spidering a web site - retrieving every link, reading the HTML, 
 finding every anchor tag and adding those links to a "to retrieve" queue.
 
-In its current form it can be used to smoke test things like
+In its current form it can be used to smoke test things like:
 
 https://www.tsugicloud.org/
 
 It is most fun if you point it at a Sakai running on localhost:8080 - it will log
 in as admin and proceed to beat the Sakai up pretty hard :)
+
+This is not a real automated QA suite in any way because it does not actually
+change any data in the server.  It has no awareness of things like forms and form
+data.
 
 Pre-requisites
 --------------
