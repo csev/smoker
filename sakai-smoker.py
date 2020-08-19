@@ -18,8 +18,8 @@ class SakaiSmoker(Smoker):
 
     def ignoreError(self, code, url) :
         # Two common non-idempotent Wicket urls
-        if url.find('ILinkListener') > 0 : return True
-        if re.search('\?[0-9]+-[0-9]+', url) : return True
+        # if url.find('ILinkListener') > 0 : return True
+        # if re.search('\?[0-9]+-[0-9]+', url) : return True
 
         # For some reason this tool cannot find these even though a browser can find them
         # if re.search('/wicket/resource/', url) : return True

@@ -43,6 +43,13 @@ class TsugiSmoker(Smoker):
             print('\n\n')
             print(retval.group(0));
             return 450
+
+        retval = re.search('<b>Notice</b>:.* in .* on line', html)
+        if retval:
+            print('\n\n')
+            print(retval.group(0));
+            return 450
+
         return code
 
 if __name__ == "__main__":

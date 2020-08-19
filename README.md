@@ -69,6 +69,10 @@ It shows you the URL, where it was linked from, the error code, etc.
 Some Fun things to Smoke Test
 -----------------------------
 
+Localhost
+
+python3 sakai-smoker.py http://localhost:8080 40000 breadth
+
 Nightly Master 
 
 python3 sakai-smoker.py https://trunk-mysql.nightly.sakaiproject.org 40000 breadth
