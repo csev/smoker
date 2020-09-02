@@ -39,7 +39,7 @@ class Smoker :
         return False
 
     # Once a page as been retrieved, we might look at the test for a traceback or erorr page
-    def adjustCode(self, code, html, url) : 
+    def adjustCode(self, code, html, url) :
         return code
 
     # The main event
@@ -77,7 +77,7 @@ class Smoker :
 
             if self.walk == 'depth':
                 cur.execute('SELECT id,url,depth FROM Pages WHERE html is NULL and code is NULL ORDER BY depth DESC, insert_at, id LIMIT 1')
-            elif self.walk == 'breadth' : 
+            elif self.walk == 'breadth' :
                 cur.execute('SELECT id,url,depth FROM Pages WHERE html is NULL and code is NULL ORDER BY depth ASC, insert_at, id LIMIT 1')
             else :
                 cur.execute('SELECT id,url,depth FROM Pages WHERE html is NULL and code is NULL ORDER BY random() LIMIT 1')
@@ -227,6 +227,34 @@ class Smoker :
                         href = actualurl[:pos+1] + href
                     else : # Hopefully never
                         print("WTF ??? ",actualurl,href)
+
+                # Remove '/./' and '/../' before recording the URL
+                pieces = href.split('/')
+                newpieces = list()
+                querystring = False
+                for piece in pieces:
+                    if querystring :
+                        newpieces.append(piece)
+                        continue
+
+                    if '?' in piece:
+                        newpieces.append(piece)
+                        querystring = True
+                        continue
+
+                    if piece == '.' :
+                        continue;
+
+                    if piece == '..' :
+                        if len(newpieces) > 0 :
+                            newpieces.pop()
+                            continue
+                        continue;
+                    newpieces.append(piece)
+
+                newhref = '/'.join(newpieces)
+                # if newhref != href: print('!!! ', href, newhref)
+                href = newhref
 
                 ipos = href.find('#')
                 if ( ipos > 1 ) : href = href[:ipos]
