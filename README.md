@@ -69,7 +69,7 @@ It shows you the URL, where it was linked from, the error code, etc.
 Some Fun things to Smoke Test
 -----------------------------
 
-Localhost
+Localhost Sakai
 
 python3 sakai-smoker.py http://localhost:8080 40000 breadth
 
