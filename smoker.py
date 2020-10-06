@@ -48,23 +48,27 @@ class Smoker :
         cur = conn.cursor()
 
         cur.execute('''CREATE TABLE IF NOT EXISTS Pages
-            (id INTEGER PRIMARY KEY, url TEXT UNIQUE, html TEXT, size INTEGER,
+            (id INTEGER PRIMARY KEY, url TEXT UNIQUE, size INTEGER,
              code INTEGER, depth INTEGER, content_type TEXT, insert_at DOUBLE)''')
+
+        cur.execute('''CREATE TABLE IF NOT EXISTS Html
+            (id INTEGER PRIMARY KEY, url TEXT UNIQUE, html TEXT)''')
 
         cur.execute('''CREATE TABLE IF NOT EXISTS Links
             (from_id INTEGER, to_id INTEGER, UNIQUE(from_id, to_id))''')
 
         # Check to see if we are already in progress...
-        cur.execute('SELECT id,url FROM Pages WHERE html is NULL and code is NULL LIMIT 1')
+        # cur.execute('SELECT id,url FROM Pages WHERE html is NULL and code is NULL LIMIT 1')
+        cur.execute('SELECT id,url FROM Pages WHERE code is NULL LIMIT 1')
 
         row = cur.fetchone()
         if row is not None:
             print("Restarting existing crawl.  Remove",self.database,"to start a 100% fresh crawl.")
         else:
-            cur.execute('INSERT OR IGNORE INTO Pages (url, html, depth, insert_at) VALUES ( ?, NULL, ?, ? )', ( self.baseurl, 0, time()) )
+            cur.execute('INSERT OR IGNORE INTO Pages (url, depth, insert_at) VALUES ( ?, ?, ? )', ( self.baseurl, 0, time()) )
             points = self.extraStartingPoints(self.baseurl)
             for point in points:
-                cur.execute('INSERT OR IGNORE INTO Pages (url, html, depth, insert_at) VALUES ( ?, NULL, ?, ? )', ( point, 0, time()) )
+                cur.execute('INSERT OR IGNORE INTO Pages (url, depth, insert_at) VALUES ( ?, ?, ? )', ( point, 0, time()) )
             conn.commit()
 
         cookies = None
@@ -76,11 +80,11 @@ class Smoker :
             if many < 0 : return
 
             if self.walk == 'depth':
-                cur.execute('SELECT id,url,depth FROM Pages WHERE html is NULL and code is NULL ORDER BY depth DESC, insert_at, id LIMIT 1')
+                cur.execute('SELECT id,url,depth FROM Pages WHERE code is NULL ORDER BY depth DESC, insert_at, id LIMIT 1')
             elif self.walk == 'breadth' :
-                cur.execute('SELECT id,url,depth FROM Pages WHERE html is NULL and code is NULL ORDER BY depth ASC, insert_at, id LIMIT 1')
+                cur.execute('SELECT id,url,depth FROM Pages WHERE code is NULL ORDER BY depth ASC, insert_at, id LIMIT 1')
             else :
-                cur.execute('SELECT id,url,depth FROM Pages WHERE html is NULL and code is NULL ORDER BY random() LIMIT 1')
+                cur.execute('SELECT id,url,depth FROM Pages WHERE code is NULL ORDER BY random() LIMIT 1')
             try:
                 row = cur.fetchone()
                 # print row
@@ -135,8 +139,12 @@ class Smoker :
             except Exception as exc:
                 print("Unexpected error")
                 print(exc)
-                cur.execute('UPDATE Pages SET code=?, size=?, content_type=?, html=?, insert_at=? WHERE url=?',
-                        (999, 0, 'Exception', str(exc), time(), url) )
+                cur.execute('UPDATE Pages SET code=?, size=?, content_type=?, insert_at=? WHERE url=?',
+                        (999, 0, 'Exception', time(), url) )
+                # cur.execute('UPDATE Pages SET code=?, size=?, content_type=?, html=?, insert_at=? WHERE url=?',
+                        # (999, 0, 'Exception', str(exc), time(), url) )
+                conn.commit()
+                cur.execute('REPLACE INTO Html (url, html) VALUES (?, ?)', (url, str(exc)))
                 conn.commit()
                 continue
 
@@ -147,7 +155,10 @@ class Smoker :
             code = self.adjustCode(code, html, url)
 
             print('('+str(len(html))+')', code, end=' ')
-            cur.execute('UPDATE Pages SET html=?, code=?, size=?, insert_at=? WHERE url=?', (html, code, content_length, time(), url) )
+            # cur.execute('UPDATE Pages SET html=?, code=?, size=?, insert_at=? WHERE url=?', (html, code, content_length, time(), url) )
+            cur.execute('UPDATE Pages SET code=?, size=?, insert_at=? WHERE url=?', (code, content_length, time(), url) )
+            conn.commit()
+            cur.execute('REPLACE INTO Html (url, html) VALUES (?, ?)', (url, html))
             conn.commit()
 
             # some pages make slightly new links that ultimately form a circle and so
@@ -266,7 +277,7 @@ class Smoker :
                 if not href.startswith(self.baseurl) : continue
 
                 # print('new link', href)
-                cur.execute('INSERT OR IGNORE INTO Pages (url, html, depth, insert_at) VALUES ( ?, NULL, ?, ? )', ( href, depth+1, time()) )
+                cur.execute('INSERT OR IGNORE INTO Pages (url, depth, insert_at) VALUES ( ?, ?, ? )', ( href, depth+1, time()) )
                 count = count + 1
 
                 cur.execute('SELECT id FROM Pages WHERE url=? LIMIT 1', ( href, ))
