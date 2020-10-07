@@ -26,6 +26,8 @@ for row in rows:
     url = row[0]
     new_errors[url] = row[1:]
 
+print("Errors "+sys.argv[1]+"="+str(len(new_errors)))
+
 conn = sqlite3.connect(sys.argv[2])
 cur = conn.cursor()
 
@@ -45,7 +47,8 @@ for row in rows:
     url = row[0]
     old_errors[url] = row[1:]
 
-print("Errors new="+str(len(new_errors))+" old="+str(len(old_errors)))
+
+print("Errors "+sys.argv[1]+"="+str(len(old_errors)))
 
 delta = dict()
 for url, row in new_errors.items():
