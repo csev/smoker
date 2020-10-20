@@ -76,6 +76,7 @@ python3 sakai-smoker.py http://localhost:8080 40000 breadth
 Nightly Master 
 
 python3 sakai-smoker.py https://trunk-mysql.nightly.sakaiproject.org 40000 breadth
+python3 sakai-smoker.py https://trunk-oracle.nightly.sakaiproject.org 40000 breadth
 
 The 20.x branch
 

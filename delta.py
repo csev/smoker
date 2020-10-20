@@ -58,8 +58,13 @@ for url, row in new_errors.items():
     new_from = row[3]
     old_row = old_errors.get(url, None)
     old_code = -1
-    if old_row != None : old_code = old_row[0]
-    if old_row == None or new_code != old_code :
+    if old_row == None :
+        print(url, 9999, new_code)
+        delta[url] = (url, old_code, new_code)
+        continue
+
+    old_code = old_row[0]
+    if new_code != old_code :
         print(url, old_code, new_code)
         delta[url] = (url, old_code, new_code)
 

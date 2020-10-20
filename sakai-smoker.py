@@ -34,6 +34,12 @@ class SakaiSmoker(Smoker):
         if '/portal/logout' in href : return True
         if '/portal/login' in href : return True
 
+        # Broken things in the admin site
+        # http://localhost:8080/portal/site/!admin/tool/!admin-1225/reports?wicket-crypt=r4pLSgXJxv1IAKem2rtXshW-...
+        if '/reports?wicket-crypt' in href: return True
+        # http://localhost:8080/portal/site/!admin/tool/!admin-1225/admin?wicket-crypt=sNyijE1gL-pZUHNEl
+        if '/admin?wicket-crypt' in href: return True
+
         # Helpers usually need to run in a precise sequence for state
         if 'ResourcePicker/tool' in href : return True
         if re.search('/portal/site/[^/]*/tool/[^/]*.PermissionsHelper', href) : return True
