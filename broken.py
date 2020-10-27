@@ -4,7 +4,7 @@ import sys
 conn = sqlite3.connect('smoker.sqlite')
 cur = conn.cursor()
 
-cur.execute('''SELECT count(*) FROM pages''')
+cur.execute('''SELECT count(*) FROM pages WHERE code IS NOT NULL''')
 row = cur.fetchone()
 total = row[0]
 
