@@ -48,7 +48,7 @@ for row in rows:
     old_errors[url] = row[1:]
 
 
-print("Errors "+sys.argv[1]+"="+str(len(old_errors)))
+print("Errors "+sys.argv[2]+"="+str(len(old_errors)))
 
 delta = dict()
 for url, row in new_errors.items():
