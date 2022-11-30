@@ -166,9 +166,6 @@ class Smoker :
                 if the_id is not None :
                     if ids.get(the_id, None) is not None :
                         bad_id = the_id
-                        if the_id != 'portal-notifications-indicator' : 
-                            print("Woah - Duplicate id", the_id)
-                            print(x, ids[the_id])
                     else :
                         ids[the_id] = x
 
