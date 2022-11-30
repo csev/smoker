@@ -49,7 +49,7 @@ class Smoker :
 
         cur.execute('''CREATE TABLE IF NOT EXISTS Pages
             (id INTEGER PRIMARY KEY, url TEXT UNIQUE, size INTEGER,
-             code INTEGER, depth INTEGER, content_type TEXT, insert_at DOUBLE)''')
+             code INTEGER, depth INTEGER, content_type TEXT, bad_id STRING, insert_at DOUBLE)''')
 
         cur.execute('''CREATE TABLE IF NOT EXISTS Html
             (id INTEGER PRIMARY KEY, url TEXT UNIQUE, html TEXT)''')
@@ -154,9 +154,27 @@ class Smoker :
 
             code = self.adjustCode(code, html, url)
 
+            # Check for duplicate ids
+            soup = BeautifulSoup(html, "html.parser")
+
+            ids = dict()
+            bad_id = None
+            for x in soup():
+                # print(x)
+                the_id = x.get('id', None)
+                # print(the_id)
+                if the_id is not None :
+                    if ids.get(the_id, None) is not None :
+                        bad_id = the_id
+                        if the_id != 'portal-notifications-indicator' : 
+                            print("Woah - Duplicate id", the_id)
+                            print(x, ids[the_id])
+                    else :
+                        ids[the_id] = x
+
             print('('+str(len(html))+')', code, end=' ')
             # cur.execute('UPDATE Pages SET html=?, code=?, size=?, insert_at=? WHERE url=?', (html, code, content_length, time(), url) )
-            cur.execute('UPDATE Pages SET code=?, size=?, insert_at=? WHERE url=?', (code, content_length, time(), url) )
+            cur.execute('UPDATE Pages SET code=?, size=?, insert_at=?, bad_id=? WHERE url=?', (code, content_length, time(), bad_id, url) )
             conn.commit()
             cur.execute('REPLACE INTO Html (url, html) VALUES (?, ?)', (url, html))
             conn.commit()
@@ -165,13 +183,12 @@ class Smoker :
             # we seem them as infinite depth - a cut off solves this
             if depth > self.maxdepth : continue
 
-            soup = BeautifulSoup(html, "html.parser")
-
             # Retrieve all of the external links
             count = 0
             hrefs = list()
             tags = soup('a')
             for tag in tags:
+
                 href = tag.get('href', None)
                 if ( href is None ) : continue
 
