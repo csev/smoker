@@ -28,7 +28,7 @@ Running the smoke tester
 
 If you don't enter a base url, it assumes Sakai on port 8080
 
-    python3 smoker.py http://localhost:8080 5 depth
+    python3.9 smoker.py http://localhost:8080 5 depth
     1 0 http://localhost:8080 (124) 200 1
     2 1 http://localhost:8080/portal (42145) 200 47
     3 2 http://localhost:8080/portal/site/!gateway/page-reset/!gateway-100 (42145) 200 47
@@ -38,7 +38,7 @@ If you don't enter a base url, it assumes Sakai on port 8080
 It can work with any web tool / web site.  The site can be running locally or
 on the Internet:
 
-    python3 smoker.py https://www.tsugicloud.org 5 breadth
+    python3.9 smoker.py https://www.tsugicloud.org 5 breadth
     1 0 https://www.tsugicloud.org (13589) 200 22
     2 1 https://www.tsugicloud.org/about/policies/privacy (15633) 200 22
     3 1 https://www.tsugicloud.org/about/policies/data-retention (10035) 200 22
@@ -55,7 +55,7 @@ The third parameter is how the pages are walked it can be:
 
 To view the results - even while it is running, use
 
-    python3 broken.py
+    python3.9 broken.py
 
 This runs a long time - and since we are using SQLite3 - you can cause a transction timeout
 if you run `broken.py` towards the end of a really long run.
@@ -71,24 +71,24 @@ Some Fun things to Smoke Test
 
 Localhost Sakai
 
-python3 sakai-smoker.py http://localhost:8080 40000 breadth
+python3.9 sakai-smoker.py http://localhost:8080 40000 breadth
 
 Nightly Master 
 
-python3 sakai-smoker.py https://trunk-mysql.nightly.sakaiproject.org 40000 breadth
-python3 sakai-smoker.py https://trunk-oracle.nightly.sakaiproject.org 40000 breadth
+python3.9 sakai-smoker.py https://trunk-mysql.nightly.sakaiproject.org 40000 breadth
+python3.9 sakai-smoker.py https://trunk-oracle.nightly.sakaiproject.org 40000 breadth
 
 The 20.x branch
 
-python3 sakai-smoker.py https://qa20-mysql.nightly.sakaiproject.org/ 40000 breadth
+python3.9 sakai-smoker.py https://qa20-mysql.nightly.sakaiproject.org/ 40000 breadth
 
 The 19.x branch
 
-python3 sakai-smoker.py https://qa19-mysql.nightly.sakaiproject.org/ 40000 breadth
+python3.9 sakai-smoker.py https://qa19-mysql.nightly.sakaiproject.org/ 40000 breadth
 
 A copy of the PY4E Tsugi/Koseu site
 
-python3 tsugi-smoker.py http://localhost:8888/py4e 4000 breadth
+python3.9 tsugi-smoker.py http://localhost:8888/py4e 4000 breadth
 
 Viewing in a Browser
 --------------------
